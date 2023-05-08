@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - task_loader
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgres://postgres:password@db:5432/barber
+      - REDIS_URL=redis://redis:6379/0
+      - TASK_LOADER_URL=http://task_loader:8001
+    command: python manage.py runserver 0.0.0.0:8000
+
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: barber
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+
+  redis:
+    image: redis:latest
+    restart: always
+
+  task_loader:
+    build: ./task_loader
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/barber
+      - REDIS_URL=redis://redis:6379/0
+    command: python task_loader.py
+
+  chatbot:
+    build: ./chatbot
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/barber
+      - REDIS_URL=redis://redis:6379/0
+    command: python chatbot.py
