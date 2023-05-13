@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Welcome to the Barber CRM System</h1>
+  <p>Here you can keep track of all your customers and their appointments.</p>
+
+  {% if customers %}
+    <h2>Customers:</h2>
+    <ul>
+      {% for customer in customers %}
+        <li>{{ customer.name }} - {{ customer.phone_number }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No customers found.</p>
+  {% endif %}
+
+ <h2>Add a new customer:</h2>
+    <form method="post" action="{% url 'customer_added' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add</button>
+    </form>
+{% endblock %}
